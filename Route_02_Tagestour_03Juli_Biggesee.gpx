@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Kurviger" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TripExtensions/v1 http://www.garmin.com/xmlschemas/TripExtensionsv1.xsd" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:trp="http://www.garmin.com/xmlschemas/TripExtensions/v1">
+	<metadata>
+		<name>Route_02_Tagestour_03Juli_Biggesee</name>
+		<copyright author="OpenStreetMap contributors"/>
+		<link href="https://kurviger.com">
+			<text>Kurviger.com GPX</text>
+		</link>
+		<time>2026-06-07T09:16:34.258Z</time>
+	</metadata>
+	<rte>
+		<name>Route_02_Tagestour_03Juli_Biggesee</name>
+		<extensions>
+			<trp:Trip>
+				<trp:TransportationMode>Motorcycling</trp:TransportationMode>
+			</trp:Trip>
+		</extensions>
+		<rtept lat="51.19415" lon="8.52168">
+			<name>START: Lodge Hotel Winterberg</name>
+			<sym>Flag, Green</sym>
+			<type>start</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.15252" lon="8.53241">
+			<name>Via Point 1</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.10155" lon="8.44051">
+			<name>Siedlinghausen</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.155" lon="8.28679">
+			<name>Züschen</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.24498" lon="8.27999">
+			<name>KAFFEEPAUSE: Schmallenberg (10:15 Uhr)</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.21327" lon="8.21712">
+			<name>Richtung Kirchhundem</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.10223" lon="8.06842">
+			<name>Kirchhundem</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.08847" lon="7.9797">
+			<name>Richtung Attendorn</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.02766" lon="7.85005">
+			<name>Olpe</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.10063" lon="7.86189">
+			<name>B55 Richtung Lennestadt</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.13653" lon="8.01167">
+			<name>MITTAGSPAUSE: Lennestadt-Grevenbrück (13:00 Uhr)</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.16591" lon="8.10338">
+			<name>Fredeburg - oberes Lennetal</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.25467" lon="8.1702">
+			<name>NACHMITTAGSPAUSE: Eslohe (15:30 Uhr)</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.25864" lon="8.35016">
+			<name>Richtung Winterberg - B55</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.22187" lon="8.46036">
+			<name>Züschen Richtung Winterberg</name>
+			<sym>Flag, Blue</sym>
+			<type>via</type>
+			<extensions>
+				<trp:ViaPoint>
+					<trp:CalculationMode>Adventurous</trp:CalculationMode>
+				</trp:ViaPoint>
+			</extensions>
+		</rtept>
+		<rtept lat="51.19415" lon="8.52168">
+			<name>ZIEL: Lodge Hotel Winterberg</name>
+			<sym>Flag, Red</sym>
+			<type>destination</type>
+			<extensions>
+				<trp:ViaPoint/>
+			</extensions>
+		</rtept>
+	</rte>
+</gpx>

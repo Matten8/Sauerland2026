@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motorradtour Sauerland 2026 – Reiseplan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 40px 20px 30px;
+      text-align: center;
+      border-bottom: 3px solid #e94560;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '🏍️';
+      position: absolute;
+      font-size: 120px;
+      opacity: 0.05;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .header h1 { font-size: 2.4em; color: #ffffff; text-transform: uppercase; letter-spacing: 3px; }
+    .header h2 { font-size: 1.3em; color: #e94560; margin-top: 8px; font-weight: 300; letter-spacing: 2px; }
+    .header .subtitle { color: #8892b0; margin-top: 10px; font-size: 0.95em; }
+    .badge-row { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+    .badge { background: rgba(233,69,96,0.15); border: 1px solid #e94560; color: #e94560; padding: 5px 15px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+
+    /* NAV TABS */
+    .tabs { display: flex; background: #16213e; border-bottom: 2px solid #0f3460; overflow-x: auto; }
+    .tab { padding: 14px 22px; cursor: pointer; color: #8892b0; font-size: 0.9em; font-weight: 600; white-space: nowrap; transition: all 0.3s; border-bottom: 3px solid transparent; }
+    .tab:hover { color: #e0e0e0; background: rgba(255,255,255,0.05); }
+    .tab.active { color: #e94560; border-bottom-color: #e94560; background: rgba(233,69,96,0.1); }
+
+    /* CONTENT */
+    .content { display: none; padding: 30px 20px; max-width: 1200px; margin: 0 auto; }
+    .content.active { display: block; }
+
+    /* CARDS */
+    .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .card h3 { color: #e94560; margin-bottom: 15px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+    .card h4 { color: #64ffda; margin: 15px 0 8px; font-size: 0.95em; }
+
+    /* GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    @media(max-width:768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* INFO ROWS */
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0f3460; font-size: 0.9em; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #8892b0; }
+    .info-value { color: #e0e0e0; font-weight: 600; text-align: right; }
+
+    /* BOOKING TABLE */
+    .booking-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+    .booking-table th { background: #0f3460; color: #64ffda; padding: 10px 12px; text-align: left; }
+    .booking-table td { padding: 10px 12px; border-bottom: 1px solid #0f3460; }
+    .booking-table tr:hover td { background: rgba(100,255,218,0.05); }
+    .res-number { color: #e94560; font-family: monospace; font-size: 0.9em; }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-left: 30px; }
+    .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #0f3460; }
+    .tl-item { position: relative; margin-bottom: 20px; }
+    .tl-dot { position: absolute; left: -26px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: #e94560; border: 2px solid #1a1a2e; }
+    .tl-dot.green { background: #64ffda; }
+    .tl-dot.yellow { background: #ffd700; }
+    .tl-dot.blue { background: #4da6ff; }
+    .tl-time { color: #e94560; font-size: 0.82em; font-weight: 700; margin-bottom: 3px; }
+    .tl-title { color: #ffffff; font-weight: 600; font-size: 0.95em; }
+    .tl-desc { color: #8892b0; font-size: 0.85em; margin-top: 3px; }
+
+    /* ROUTE STATS */
+    .stat-box { background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); border-radius: 8px; padding: 15px; text-align: center; }
+    .stat-value { font-size: 2em; font-weight: 700; color: #e94560; }
+    .stat-label { color: #8892b0; font-size: 0.8em; margin-top: 4px; }
+
+    /* MAP */
+    #map { width: 100%; height: 520px; border-radius: 12px; border: 1px solid #0f3460; }
+    .map-legend { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85em; }
+    .legend-line { width: 30px; height: 4px; border-radius: 2px; }
+
+    /* STOPS */
+    .stop-card { background: #0f3460; border-radius: 8px; padding: 14px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; }
+    .stop-icon { font-size: 1.5em; flex-shrink: 0; }
+    .stop-title { font-weight: 600; color: #ffffff; font-size: 0.9em; }
+    .stop-detail { color: #8892b0; font-size: 0.82em; margin-top: 3px; }
+
+    /* TOTAL */
+    .total-bar { background: linear-gradient(90deg, #e94560, #c0392b); border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+    .total-label { color: #ffffff; font-weight: 700; }
+    .total-value { color: #ffffff; font-size: 1.4em; font-weight: 700; }
+
+    /* TIPS */
+    .tip { background: rgba(100,255,218,0.08); border-left: 3px solid #64ffda; padding: 12px 15px; border-radius: 0 8px 8px 0; margin-bottom: 10px; font-size: 0.88em; color: #ccd6f6; }
+    .tip strong { color: #64ffda; }
+
+    /* WEATHER */
+    .weather-box { background: rgba(77,166,255,0.1); border: 1px solid rgba(77,166,255,0.3); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .weather-box h4 { color: #4da6ff; margin-bottom: 8px; }
+
+    /* PRINT */
+    @media print {
+      body { background: #fff; color: #000; }
+      .tabs { display: none; }
+      .content { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏍️ Motorradtour Sauerland 2026</h1>
+  <h2>Lodge Hotel Winterberg · 02.–05. Juli 2026</h2>
+  <p class="subtitle">5 Fahrer · 5 Motorräder · Looft → Sauerland → Looft</p>
+  <div class="badge-row">
+    <span class="badge">4 Tage</span>
+    <span class="badge">~1.100 km gesamt</span>
+    <span class="badge">5 Personen</span>
+    <span class="badge">4 Zimmer gebucht</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('uebersicht')">📋 Gesamtübersicht</div>
+  <div class="tab" onclick="showTab('hotel')">🏨 Hotel & Buchungen</div>
+  <div class="tab" onclick="showTab('karte')">🗺️ Karte & Routen</div>
+  <div class="tab" onclick="showTab('tag1')">📅 02.07 Hinfahrt</div>
+  <div class="tab" onclick="showTab('tag2')">📅 03.07 Tagestour</div>
+  <div class="tab" onclick="showTab('tag3')">📅 04.07 Tagestour</div>
+  <div class="tab" onclick="showTab('tag4')">📅 05.07 Rückfahrt</div>
+  <div class="tab" onclick="showTab('tipps')">💡 Tipps & Infos</div>
+</div>
+
+<!-- ===== GESAMTÜBERSICHT ===== -->
+<div id="uebersicht" class="content active">
+  <div class="grid-2">
+    <div class="card">
+      <h3>🗓️ Reiseüberblick</h3>
+      <div class="info-row"><span class="info-label">Reisezeitraum</span><span class="info-value">02.–05. Juli 2026</span></div>
+      <div class="info-row"><span class="info-label">Dauer</span><span class="info-value">4 Tage / 3 Nächte</span></div>
+      <div class="info-row"><span class="info-label">Gruppe</span><span class="info-value">5 Personen, 5 Motorräder</span></div>
+      <div class="info-row"><span class="info-label">Startpunkt</span><span class="info-value">25582 Looft (SH)</span></div>
+      <div class="info-row"><span class="info-label">Unterkunft</span><span class="info-value">Lodge Hotel Winterberg</span></div>
+      <div class="info-row"><span class="info-label">Zimmer</span><span class="info-value">4 Zimmer (1 DZ + 3 EZ)</span></div>
+      <div class="info-row"><span class="info-label">Gesamtkosten Hotel</span><span class="info-value">1.461,00 €</span></div>
+    </div>
+    <div class="card">
+      <h3>🛣️ Kilometerübersicht</h3>
+      <div class="info-row"><span class="info-label">02.07 Hinfahrt (Looft→Winterberg)</span><span class="info-value">430 km</span></div>
+      <div class="info-row"><span class="info-label">03.07 Tagestour (Biggesee-Runde)</span><span class="info-value">210 km</span></div>
+      <div class="info-row"><span class="info-label">04.07 Tagestour (Rothaar-Runde)</span><span class="info-value">200 km</span></div>
+      <div class="info-row"><span class="info-label">05.07 Rückfahrt (Winterberg→Looft)</span><span class="info-value">490 km</span></div>
+      <div class="total-bar"><span class="total-label">Gesamtkilometer (Route A)</span><span class="total-value">1.330 km</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📅 Tagesübersicht</h3>
+    <div style="overflow-x:auto;">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>Datum</th>
+            <th>Route</th>
+            <th>km</th>
+            <th>Highlights</th>
+            <th>Übernachtung</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Do</td>
+            <td>02. Juli</td>
+            <td>Looft → Winterberg</td>
+            <td>430 km</td>
+            <td>A7 · Brilon-Wald · B480 · Brilon · Winterberg</td>
+            <td>Lodge Hotel Winterberg</td>
+          </tr>
+          <tr>
+            <td>Fr</td>
+            <td>03. Juli</td>
+            <td>Biggesee-Runde</td>
+            <td>210 km</td>
+            <td>Schmallenberg · Kirchhundem · Biggesee · Olpe · Lennestadt</td>
+            <td>Lodge Hotel Winterberg</td>
+          </tr>
+          <tr>
+            <td>Sa</td>
+            <td>04. Juli</td>
+            <td>Rothaar-Runde</td>
+            <td>200 km</td>
+            <td>Brilon/Madfeld · Medebach · Frankenberg · Bad Laasphe · Bad Berleburg</td>
+            <td>Lodge Hotel Winterberg</td>
+          </tr>
+          <tr>
+            <td>So</td>
+            <td>05. Juli</td>
+            <td>Winterberg → Looft</td>
+            <td>490 km</td>
+            <td>B7 · Arnsberg · A46 · A1 · Hamburg · A7 · A23</td>
+            <td>–</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="stat-box">
+      <div class="stat-value">1.330</div>
+      <div class="stat-label">Kilometer gesamt</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">4</div>
+      <div class="stat-label">Routen mit GPX</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">1.461 €</div>
+      <div class="stat-label">Hotelkosten gesamt</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOTEL & BUCHUNGEN ===== -->
+<div id="hotel" class="content">
+  <div class="card">
+    <h3>🏨 Lodge Hotel Winterberg</h3>
+    <div class="grid-2">
+      <div>
+        <div class="info-row"><span class="info-label">Hotel</span><span class="info-value">Lodge Hotel Winterberg</span></div>
+        <div class="info-row"><span class="info-label">Check-in</span><span class="info-value">Do, 02. Juli 2026</span></div>
+        <div class="info-row"><span class="info-label">Check-out</span><span class="info-value">So, 05. Juli 2026</span></div>
+        <div class="info-row"><span class="info-label">Aufenthalt</span><span class="info-value">3 Nächte</span></div>
+        <div class="info-row"><span class="info-label">Zimmer gesamt</span><span class="info-value">4 Zimmer</span></div>
+        <div class="info-row"><span class="info-label">Frühstück</span><span class="info-value">Inkl. (Flexibel-Rate)</span></div>
+        <div class="info-row"><span class="info-label">Buchender</span><span class="info-value">Mathias Breiholz</span></div>
+      </div>
+      <div>
+        <div class="info-row"><span class="info-label">Kategorie</span><span class="info-value">Standard-Doppelzimmer</span></div>
+        <div class="info-row"><span class="info-label">Ratentyp</span><span class="info-value">Flexibel inkl. Frühstück</span></div>
+        <div class="info-row"><span class="info-label">Stornierung kostenfrei</span><span class="info-value">bis 29. Juni 2026</span></div>
+        <div class="info-row"><span class="info-label">Buchungsdatum</span><span class="info-value">14. Mai 2026</span></div>
+        <div class="info-row"><span class="info-label">Gesamtpreis Hotel</span><span class="info-value" style="color:#e94560;font-size:1.1em;">1.461,00 €</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📄 Buchungsbestätigungen – Alle 4 Zimmer</h3>
+    <table class="booking-table">
+      <thead>
+        <tr>
+          <th>Reservierungsnummer</th>
+          <th>Zimmer</th>
+          <th>Gäste</th>
+          <th>Kategorie</th>
+          <th>Preis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="res-number">LHW-BFF408-3850</span></td>
+          <td>Zimmer 1</td>
+          <td>2 Erwachsene</td>
+          <td>Standard-Doppelzimmer</td>
+          <td>426,00 €</td>
+        </tr>
+        <tr>
+          <td><span class="res-number">LHW-BFF408-3850-2</span></td>
+          <td>Zimmer 2</td>
+          <td>1 Erwachsener</td>
+          <td>Standard-Doppelzimmer</td>
+          <td>345,00 €</td>
+        </tr>
+        <tr>
+          <td><span class="res-number">LHW-BFF408-3850-3</span></td>
+          <td>Zimmer 3</td>
+          <td>1 Erwachsener</td>
+          <td>Standard-Doppelzimmer</td>
+          <td>345,00 €</td>
+        </tr>
+        <tr>
+          <td><span class="res-number">LHW-BFF408-3850-4</span></td>
+          <td>Zimmer 4</td>
+          <td>1 Erwachsener</td>
+          <td>Standard-Doppelzimmer</td>
+          <td>345,00 €</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="total-bar" style="margin-top:15px;">
+      <span class="total-label">Gesamtpreis Hotel (inkl. MwSt.)</span>
+      <span class="total-value">1.461,00 €</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Stornierungsbedingungen</h3>
+    <div class="tip"><strong>Kostenfreie Stornierung:</strong> bis 3 Tage vor Anreise, d.h. bis spätestens <strong>Montag, 29. Juni 2026</strong></div>
+    <div class="tip"><strong>Spätere Stornierung / Nicht-Anreise:</strong> 90% des Logispreises werden berechnet</div>
+    <div class="tip"><strong>Frühstück:</strong> Im Preis inbegriffen (Rate: Flexibel inkl. Frühstück). Frühstücksbuffet täglich verfügbar.</div>
+  </div>
+</div>
+
+<!-- ===== KARTE ===== -->
+<div id="karte" class="content">
+  <div class="card">
+    <h3>🗺️ Interaktive Routenkarte</h3>
+    <p style="color:#8892b0;font-size:0.85em;margin-bottom:15px;">Alle 4 Routen auf einen Blick. Klicken Sie auf die farbigen Linien und Marker für Details.</p>
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-line" style="background:#e94560;"></div><span>02.07 Hinfahrt Route A (Looft → Winterberg)</span></div>
+      <div class="legend-item"><div class="legend-line" style="background:#ff9500; border-style:dashed;"></div><span>02.07 Hinfahrt Route B – Alternative (~50% Landstraße)</span></div>
+      <div class="legend-item"><div class="legend-line" style="background:#64ffda;"></div><span>03.07 Biggesee-Runde (Siedlinghausen · Schmallenberg · Lennestadt)</span></div>
+      <div class="legend-item"><div class="legend-line" style="background:#ffd700;"></div><span>04.07 Rothaar-Runde</span></div>
+      <div class="legend-item"><div class="legend-line" style="background:#4da6ff;"></div><span>05.07 Rückfahrt (Winterberg → Looft)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAG 1 ===== -->
+<div id="tag1" class="content">
+  <div class="grid-2">
+    <div class="card">
+      <h3>🔴 02. Juli – Hinfahrt</h3>
+      <div class="info-row"><span class="info-label">Strecke</span><span class="info-value">Looft → Winterberg</span></div>
+      <div class="info-row"><span class="info-label">Distanz</span><span class="info-value">430 km</span></div>
+      <div class="info-row"><span class="info-label">Fahrzeit rein</span><span class="info-value">ca. 5 Std.</span></div>
+      <div class="info-row"><span class="info-label">Empf. Abfahrt</span><span class="info-value">08:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">Empf. Ankunft</span><span class="info-value">ca. 14:30–15:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">GPS-Datei</span><span class="info-value">Route_01_Hinfahrt_02Juli.gpx</span></div>
+    </div>
+    <div class="card">
+      <h3>📊 Routenprofil</h3>
+      <div class="grid-2" style="gap:10px;">
+        <div class="stat-box"><div class="stat-value">430</div><div class="stat-label">Kilometer</div></div>
+        <div class="stat-box"><div class="stat-value">~5h</div><div class="stat-label">Fahrzeit</div></div>
+        <div class="stat-box"><div class="stat-value">65%</div><div class="stat-label">Autobahn</div></div>
+        <div class="stat-box"><div class="stat-value">35%</div><div class="stat-label">Landstraße</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>⏱️ Tagesablauf</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">08:00 Uhr</div>
+        <div class="tl-title">Abfahrt Looft (25582)</div>
+        <div class="tl-desc">Treffpunkt und gemeinsamer Start | A23-Auffahrt Richtung Hamburg</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:00 Uhr</div>
+        <div class="tl-title">Hamburg – A7 Richtung Süden</div>
+        <div class="tl-desc">A7 durch Hamburger Stadtgebiet · weiter Richtung Hannover</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">09:45 Uhr</div>
+        <div class="tl-title">☕ Kaffeepause – Soltau</div>
+        <div class="tl-desc">30 Min. | Ausfahrt Soltau-West oder -Ost | Bäckerei/Café im Ort empfohlen | Zentrum fußläufig erreichbar</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">10:15 Uhr</div>
+        <div class="tl-title">A7 weiter → Hannover Kreuz West → A2</div>
+        <div class="tl-desc">A2 Richtung Dortmund → A44 Abfahrt Richtung Brilon</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">12:30 Uhr</div>
+        <div class="tl-title">🍽️ Mittagspause – Brilon</div>
+        <div class="tl-desc">45 Min. | Historischer Marktplatz Brilon | Gasthof Brauerei Briloner Landbier empfohlen | Direkt am Start der B480-Panoramastrecke</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">13:15 Uhr</div>
+        <div class="tl-title">🏔️ B480 – Brilon → Medebach → Hallenberg → Winterberg</div>
+        <div class="tl-desc">Highlight der Route! ~40 km kurvenreiche Sauerland-Panoramastraße · Wälder · Hochlagen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">14:30 Uhr</div>
+        <div class="tl-title">🏁 Ankunft Lodge Hotel Winterberg</div>
+        <div class="tl-desc">Check-in · Zimmer beziehen · Abendessen in Winterberg</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>🛣️ Route A – Streckenbeschreibung (430 km, ~35% Landstraße)</h3>
+    <div class="stop-card"><div class="stop-icon">🚀</div><div><div class="stop-title">Looft → A23 → Hamburg (ca. 90 km)</div><div class="stop-detail">A23 südwärts nach Hamburg · Schneller Autobahnabschnitt durch Schleswig-Holstein</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🛣️</div><div><div class="stop-title">Hamburg → A7 → Hannover (ca. 150 km)</div><div class="stop-detail">A7 durch Hamburger Stadtgebiet und weiter Richtung Hannover · Kreuz Hannover-West → A2</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🛣️</div><div><div class="stop-title">Hannover → A2 → Paderborn → A44 (ca. 70 km)</div><div class="stop-detail">A2 westlich · Bielefeld · A33 Südring · A44 Richtung Sauerland</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🏔️</div><div><div class="stop-title">B480: Brilon → Medebach → Hallenberg → Winterberg (ca. 40 km)</div><div class="stop-detail">Highlights der Route! Kurvenreiche Sauerland-Panoramastraße · Wälder · Hochlagen · Typisches Sauerland-Feeling</div></div></div>
+  </div>
+
+  <div class="card" style="border-color:#ff9500;">
+    <h3 style="color:#ff9500;">🧡 Route B – ALTERNATIVROUTE (450 km, ~50% Landstraße)</h3>
+    <p style="color:#8892b0;font-size:0.87em;margin-bottom:15px;">Gleicher Start in Looft – aber mit Highlights: Porta Westfalica, Teutoburger Wald und Detmold. Ca. 1h länger als Route A. Empfehlung: Abfahrt 07:30 Uhr.</p>
+    <div class="grid-2" style="gap:10px;margin-bottom:15px;">
+      <div class="stat-box" style="background:rgba(255,149,0,0.1);border-color:rgba(255,149,0,0.3);"><div class="stat-value" style="color:#ff9500;">450 km</div><div class="stat-label">Gesamtdistanz</div></div>
+      <div class="stat-box" style="background:rgba(255,149,0,0.1);border-color:rgba(255,149,0,0.3);"><div class="stat-value" style="color:#ff9500;">~50%</div><div class="stat-label">Landstraße</div></div>
+    </div>
+    <div class="stop-card"><div class="stop-icon">🚀</div><div><div class="stop-title">Looft → A7 → Soltau (ca. 120 km Autobahn)</div><div class="stop-detail">A7 südwärts durch Schleswig-Holstein und die Lüneburger Heide · zügige erste Etappe</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🏛️</div><div><div class="stop-title">Zwischenstopp: Porta Westfalica – ca. 10:30 Uhr (20–30 Min.)</div><div class="stop-detail">Markantes Weser-Durchbruchstal · Kaiser-Wilhelm-Denkmal mit Panoramablick · Toller Fotostopp vor dem Teutoburger Wald</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🌲</div><div><div class="stop-title">Vlotho/Rinteln → B238 → Horn-Bad Meinberg → Detmold (ca. 80 km Landstraße)</div><div class="stop-detail">Herrliche Waldstraßen durchs Teutoburger Gebirge · ☕ Kaffeepause Detmold ca. 11:30 Uhr · Hermannsdenkmal 2 km vom Zentrum (Tipp!)</div></div></div>
+    <div class="stop-card"><div class="stop-icon">☕</div><div><div class="stop-title">Kaffeepause: Detmold – ca. 11:30 Uhr (40 Min.)</div><div class="stop-detail">Historische Residenzstadt · Café am Marktplatz empfohlen · Hermannsdenkmal 2 km südlich als Kurz-Ausflug</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🍽️</div><div><div class="stop-title">Mittagspause: Büren – ca. 13:15 Uhr (45 Min.)</div><div class="stop-detail">Kleines Städtchen auf der B480 zwischen Paderborn und Brilon · Landgasthof am Alten Markt empfohlen · Schöner Marktplatz</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🏔️</div><div><div class="stop-title">Detmold → B1 → Paderborn → B480 → Brilon → Winterberg (ca. 130 km Landstraße)</div><div class="stop-detail">Paderborner Hochebene · B480 Sauerland-Panoramastraße · Brilon → Medebach → Hallenberg → Winterberg</div></div></div>
+    <div class="tip" style="margin-top:10px;"><strong>GPS-Datei:</strong> Route_01b_Hinfahrt_02Juli_Alternative.gpx &nbsp;|&nbsp; <strong>Abfahrt:</strong> 07:30 Uhr &nbsp;|&nbsp; <strong>Ankunft:</strong> ca. 15:30 Uhr</div>
+  </div>
+</div>
+
+<!-- ===== TAG 2 ===== -->
+<div id="tag2" class="content">
+  <div class="grid-2">
+    <div class="card">
+      <h3>🟢 03. Juli – Biggesee-Runde</h3>
+      <div class="info-row"><span class="info-label">Start/Ziel</span><span class="info-value">Lodge Hotel Winterberg</span></div>
+      <div class="info-row"><span class="info-label">Distanz</span><span class="info-value">210 km</span></div>
+      <div class="info-row"><span class="info-label">Fahrzeit rein</span><span class="info-value">ca. 4,5 Std.</span></div>
+      <div class="info-row"><span class="info-label">Abfahrt</span><span class="info-value">09:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">Rückkehr</span><span class="info-value">ca. 17:30 Uhr</span></div>
+      <div class="info-row"><span class="info-label">Kaffeepause</span><span class="info-value">Schmallenberg ca. 10:15 Uhr</span></div>
+      <div class="info-row"><span class="info-label">GPS-Datei</span><span class="info-value">Route_02_Tagestour_03Juli_Biggesee.gpx</span></div>
+    </div>
+    <div class="card">
+      <h3>📊 Routenprofil</h3>
+      <div class="grid-2" style="gap:10px;">
+        <div class="stat-box"><div class="stat-value">210</div><div class="stat-label">Kilometer</div></div>
+        <div class="stat-box"><div class="stat-value">~4,5h</div><div class="stat-label">Fahrzeit</div></div>
+        <div class="stat-box"><div class="stat-value">100%</div><div class="stat-label">Landstraße</div></div>
+        <div class="stat-box"><div class="stat-value">3</div><div class="stat-label">Pausen</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>⏱️ Tagesablauf</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">07:30 Uhr</div>
+        <div class="tl-title">🥐 Frühstücksbuffet im Hotel</div>
+        <div class="tl-desc">Frühstück inkl. im Zimmerpreis</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:00 Uhr</div>
+        <div class="tl-title">Abfahrt Winterberg – südwärts</div>
+        <div class="tl-desc">Erste Etappe südwärts · Kurvenreiche Landstraße Richtung Siedlinghausen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:20 Uhr</div>
+        <div class="tl-title">Siedlinghausen → Züschen</div>
+        <div class="tl-desc">Schöne Landstraße südwestwärts durchs Hochsauerland</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:50 Uhr</div>
+        <div class="tl-title">Züschen → Richtung Schmallenberg</div>
+        <div class="tl-desc">Kurvenreiche Strecke nordwärts nach Schmallenberg</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">10:15 Uhr</div>
+        <div class="tl-title">☕ Kaffeepause – Schmallenberg</div>
+        <div class="tl-desc">35-40 Min. | Historischer Ortskern | Café am Marktplatz empfohlen | (30-40 Min später als ursprünglich)</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">11:00 Uhr</div>
+        <div class="tl-title">Kirchhundem – Hundemtal</div>
+        <div class="tl-desc">Traumhafte Talstraße durchs Hundemtal Richtung Westen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot blue"></div>
+        <div class="tl-time">12:00 Uhr</div>
+        <div class="tl-title">🏞️ Highlight: Biggesee / Attendorn</div>
+        <div class="tl-desc">Panoramafahrt am größten Stausee im Sauerland · Optional: Attendorner Tropfsteinhöhle</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">13:00 Uhr</div>
+        <div class="tl-title">Olpe – Richtung Lennestadt</div>
+        <div class="tl-desc">Durch Olpe und B55 Richtung Grevenbrück</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">13:00 Uhr</div>
+        <div class="tl-title">🍽️ Mittagspause – Lennestadt-Grevenbrück</div>
+        <div class="tl-desc">60 Min. | Kleines Essen | Restaurant am Lenneufer empfohlen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">14:30 Uhr</div>
+        <div class="tl-title">Fredeburg – Richtung Eslohe</div>
+        <div class="tl-desc">Durch Fredeburg im oberen Lennetal</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">15:30 Uhr</div>
+        <div class="tl-title">🍦 Nachmittagspause – Eslohe</div>
+        <div class="tl-desc">30 Min. | Eis oder Café | Gemütliches Dorf | Automobil- und Uhrenmuseum (Tipp!)</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">16:00 Uhr</div>
+        <div class="tl-title">Rückfahrt nach Winterberg</div>
+        <div class="tl-desc">Über B55 und Landstraßen zurück</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">17:00 Uhr</div>
+        <div class="tl-title">🏁 Rückkehr Lodge Hotel Winterberg</div>
+        <div class="tl-desc">Abendessen in Winterberg – Restaurant-Empfehlungen im Tipps-Tab</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📍 Highlights der Tour</h3>
+    <div class="stop-card"><div class="stop-icon">☕</div><div><div class="stop-title">Schmallenberg</div><div class="stop-detail">Charmante Kurstadt im Sauerland · Historischer Marktplatz · Guter Ausgangspunkt für die Weiterfahrt</div></div></div>
+    <div class="stop-card"><div class="stop-icon">💧</div><div><div class="stop-title">Biggesee / Attendorn</div><div class="stop-detail">Größter Stausee im Sauerland (870 ha) · Spektakuläre Panoramastraße · Attendorner Tropfsteinhöhle (Tipp!) ca. 3 km entfernt</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🌊</div><div><div class="stop-title">Lennestadt-Grevenbrück</div><div class="stop-detail">Idyllisches Lennetal · Mehrere gute Gasthäuser zum Mittagessen</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🍦</div><div><div class="stop-title">Eslohe</div><div class="stop-detail">Ruhiges Dorf im Lennetal · Eisdiele empfohlen · Automobil- und Uhrenmuseum Eslohe (Tipp!)</div></div></div>
+  </div>
+</div>
+
+<!-- ===== TAG 3 ===== -->
+<div id="tag3" class="content">
+  <div class="grid-2">
+    <div class="card">
+      <h3>🟡 04. Juli – Rothaar-Runde</h3>
+      <div class="info-row"><span class="info-label">Start/Ziel</span><span class="info-value">Lodge Hotel Winterberg</span></div>
+      <div class="info-row"><span class="info-label">Distanz</span><span class="info-value">200 km</span></div>
+      <div class="info-row"><span class="info-label">Fahrzeit rein</span><span class="info-value">ca. 3 Std.</span></div>
+      <div class="info-row"><span class="info-label">Abfahrt</span><span class="info-value">09:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">Rückkehr</span><span class="info-value">ca. 17:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">GPS-Datei</span><span class="info-value">Route_03_Tagestour_04Juli_Rothaar.gpx</span></div>
+    </div>
+    <div class="card">
+      <h3>📊 Routenprofil</h3>
+      <div class="grid-2" style="gap:10px;">
+        <div class="stat-box"><div class="stat-value">200</div><div class="stat-label">Kilometer</div></div>
+        <div class="stat-box"><div class="stat-value">~4h</div><div class="stat-label">Fahrzeit</div></div>
+        <div class="stat-box"><div class="stat-value">100%</div><div class="stat-label">Landstraße</div></div>
+        <div class="stat-box"><div class="stat-value">3</div><div class="stat-label">Pausen</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>⏱️ Tagesablauf</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">07:30 Uhr</div>
+        <div class="tl-title">🥐 Frühstücksbuffet im Hotel</div>
+        <div class="tl-desc">Frühstück inkl. im Zimmerpreis</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:00 Uhr</div>
+        <div class="tl-title">Abfahrt Winterberg – nordwärts</div>
+        <div class="tl-desc">Erste Etappe nordwärts Richtung Brilon/Madfeld – große Schleife durch den Rothaarsteig</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:25 Uhr</div>
+        <div class="tl-title">Brilon / Madfeld – Hochsauerlandrunde</div>
+        <div class="tl-desc">Reizvolle Landstraßen nordöstlich von Winterberg · Kurvenreich durch Wälder und Dörfer</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">10:00 Uhr</div>
+        <div class="tl-title">Schwenk südwärts – Medebach</div>
+        <div class="tl-desc">Über Medebach weiter südwärts ins Ederbergland</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">10:30 Uhr</div>
+        <div class="tl-title">☕ Kaffeepause – Frankenberg (Eder)</div>
+        <div class="tl-desc">45 Min. | Historische Fachwerkstadt | Schöner Marktplatz zum Verweilen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">11:30 Uhr</div>
+        <div class="tl-title">Hatzfeld – Richtung Bad Laasphe</div>
+        <div class="tl-desc">Durch Hatzfeld und Lahntal südwärts</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">13:00 Uhr</div>
+        <div class="tl-title">🍽️ Mittagspause – Bad Laasphe</div>
+        <div class="tl-desc">60 Min. | Gemütlicher Kurort an der Lahn | Restaurants am Kurpark empfohlen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">14:00 Uhr</div>
+        <div class="tl-title">Richtung Bad Berleburg</div>
+        <div class="tl-desc">Durch das Ederbergland nach Bad Berleburg</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">15:30 Uhr</div>
+        <div class="tl-title">🍦 Nachmittagspause – Bad Berleburg</div>
+        <div class="tl-desc">30-45 Min. | Eis oder Café | Schlossanlage Berleburg besichtigen | Residenzstadt Fürstenfamilie Sayn-Wittgenstein</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">16:15 Uhr</div>
+        <div class="tl-title">Rückfahrt B480 Richtung Winterberg</div>
+        <div class="tl-desc">Schöne B480 zurück nach Winterberg</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">17:00 Uhr</div>
+        <div class="tl-title">🏁 Rückkehr Lodge Hotel Winterberg</div>
+        <div class="tl-desc">Abendessen · Letzter Abend · Reisetag morgen</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📍 Highlights der Tour</h3>
+    <div class="stop-card"><div class="stop-icon">🌲</div><div><div class="stop-title">Brilon / Madfeld – Hochsauerlandrunde</div><div class="stop-detail">Nordrunde durch den Rothaarsteig · Kurvenreiche Landstraßen · Wälder und Hochsauerland-Panorama</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🏛️</div><div><div class="stop-title">Frankenberg (Eder)</div><div class="stop-detail">Prächtige Fachwerkstadt · Einer der schönsten Marktplätze in Hessen · Kaffeepause am Markt empfohlen</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🌿</div><div><div class="stop-title">Bad Laasphe</div><div class="stop-detail">Ruhiger Kurort im Lahntal · Schöner Kurpark · Gute Gastronomie</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🏰</div><div><div class="stop-title">Bad Berleburg</div><div class="stop-detail">Residenzstadt der Fürsten von Sayn-Wittgenstein · Schloss Berleburg · Historische Altstadt · Eisdiele empfohlen</div></div></div>
+  </div>
+</div>
+
+<!-- ===== TAG 4 ===== -->
+<div id="tag4" class="content">
+  <div class="grid-2">
+    <div class="card">
+      <h3>🔵 05. Juli – Rückfahrt</h3>
+      <div class="info-row"><span class="info-label">Strecke</span><span class="info-value">Winterberg → Looft</span></div>
+      <div class="info-row"><span class="info-label">Distanz</span><span class="info-value">490 km</span></div>
+      <div class="info-row"><span class="info-label">Fahrzeit rein</span><span class="info-value">ca. 5,5 Std.</span></div>
+      <div class="info-row"><span class="info-label">Check-out</span><span class="info-value">bis 11:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">Empf. Abfahrt</span><span class="info-value">09:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">Ankunft Looft</span><span class="info-value">ca. 14:30–15:00 Uhr</span></div>
+      <div class="info-row"><span class="info-label">GPS-Datei</span><span class="info-value">Route_04_Rueckfahrt_05Juli.gpx</span></div>
+    </div>
+    <div class="card">
+      <h3>📊 Routenprofil</h3>
+      <div class="grid-2" style="gap:10px;">
+        <div class="stat-box"><div class="stat-value">490</div><div class="stat-label">Kilometer</div></div>
+        <div class="stat-box"><div class="stat-value">~5,5h</div><div class="stat-label">Fahrzeit</div></div>
+        <div class="stat-box"><div class="stat-value">30%</div><div class="stat-label">Landstraße</div></div>
+        <div class="stat-box"><div class="stat-value">70%</div><div class="stat-label">Autobahn</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>⏱️ Tagesablauf</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">07:30 Uhr</div>
+        <div class="tl-title">🥐 Letztes Frühstück im Hotel</div>
+        <div class="tl-desc">Frühstücksbuffet inkl. | Check-out bis 11:00 Uhr</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:00 Uhr</div>
+        <div class="tl-title">Abfahrt Winterberg – B7 Richtung Meschede</div>
+        <div class="tl-desc">Schöne Landstraße B7 dem Ruhrtal entlang nordwärts</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:40 Uhr</div>
+        <div class="tl-title">Meschede – Ruhrtal</div>
+        <div class="tl-desc">Durch Meschede, weiter dem Ruhrtal folgend nach Arnsberg</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">10:30 Uhr</div>
+        <div class="tl-title">☕ Kaffeepause – Arnsberg</div>
+        <div class="tl-desc">30-45 Min. | Historische Oberstadt Arnsberg | Schlossruine mit Aussicht über das Ruhrtal | Letzter schöner Stopp im Sauerland</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">11:15 Uhr</div>
+        <div class="tl-title">Neheim-Hüsten – Auffahrt A46</div>
+        <div class="tl-desc">Auffahrt A46 Richtung Hagen</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">11:45 Uhr</div>
+        <div class="tl-title">Hagen – Wechsel auf A1 Richtung Dortmund</div>
+        <div class="tl-desc">A1 Richtung Bremen/Hamburg</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">13:00 Uhr</div>
+        <div class="tl-title">🍽️ Mittagspause – Raststätte A1</div>
+        <div class="tl-desc">Kurzer Stopp ca. 30-45 Min. | Raststätte Münsterland oder Dammer Berge</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">13:45 Uhr</div>
+        <div class="tl-title">A1 weiter Richtung Bremen/Hamburg</div>
+        <div class="tl-desc">Norddeutsche Tiefebene – zügige Autobahnfahrt</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">14:00 Uhr</div>
+        <div class="tl-title">Hamburg – A7 Richtung Norden / Wechsel auf A23</div>
+        <div class="tl-desc">A7 → A23 Richtung Itzehoe</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-time">14:30–15:00 Uhr</div>
+        <div class="tl-title">🏁 Ankunft Looft</div>
+        <div class="tl-desc">Tourabschluss in Looft – erfolgreiche Sauerland-Tour!</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>🛣️ Streckenbeschreibung</h3>
+    <div class="stop-card"><div class="stop-icon">🏔️</div><div><div class="stop-title">Winterberg → B7 → Meschede → Arnsberg (ca. 60 km)</div><div class="stop-detail">Schöner Abschluss im Sauerland · B7 dem Ruhrtal entlang · Letzter Sauerland-Genuss</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🛣️</div><div><div class="stop-title">Arnsberg → A46 → Hagen → A1 (ca. 60 km)</div><div class="stop-detail">Neheim-Hüsten A46-Auffahrt · Hagen · Wechsel A1 Richtung Norden</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🚀</div><div><div class="stop-title">A1 Dortmund → Münster → Osnabrück → Bremen → Hamburg (ca. 180 km)</div><div class="stop-detail">Norddeutsche Autobahn · Zügige Heimfahrt · Mittagsstopp auf Raststätte</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🏠</div><div><div class="stop-title">Hamburg → A7 → A23 → Itzehoe → Looft (ca. 80 km)</div><div class="stop-detail">Letzte Etappe durch Schleswig-Holstein nach Hause</div></div></div>
+  </div>
+</div>
+
+<!-- ===== TIPPS ===== -->
+<div id="tipps" class="content">
+  <div class="card">
+    <h3>🍽️ Restaurant-Empfehlungen Winterberg</h3>
+    <div class="stop-card"><div class="stop-icon">🍺</div><div><div class="stop-title">Brauhaus Winterberg</div><div class="stop-detail">Regionale Küche, Sauerländer Spezialitäten, gutes Bier</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🥩</div><div><div class="stop-title">Restaurant im Lodge Hotel</div><div class="stop-detail">Direkt im Hotel, bequem nach langer Tour</div></div></div>
+    <div class="stop-card"><div class="stop-icon">🍕</div><div><div class="stop-title">Restaurants in der Fußgängerzone Winterberg</div><div class="stop-detail">Verschiedene Restaurants und Cafés in der Innenstadt, kurzer Spaziergang vom Hotel</div></div></div>
+  </div>
+
+  <div class="card">
+    <h3>🗂️ GPS-Dateien für Navigation</h3>
+    <table class="booking-table">
+      <thead>
+        <tr><th>Datei</th><th>Tag</th><th>Strecke</th><th>Distanz</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:#64ffda;font-family:monospace;font-size:0.85em;">Route_01_Hinfahrt_02Juli.gpx</td><td>Do 02.07.</td><td>Looft → Winterberg</td><td>430 km</td></tr>
+        <tr><td style="color:#64ffda;font-family:monospace;font-size:0.85em;">Route_01b_Hinfahrt_02Juli_Alternative.gpx</td><td>Do 02.07.</td><td>Looft → Winterberg (Alternative)</td><td>450 km</td></tr>
+        <tr><td style="color:#64ffda;font-family:monospace;font-size:0.85em;">Route_02_Tagestour_03Juli_Biggesee.gpx</td><td>Fr 03.07.</td><td>Biggesee-Runde</td><td>210 km</td></tr>
+        <tr><td style="color:#64ffda;font-family:monospace;font-size:0.85em;">Route_03_Tagestour_04Juli_Rothaar.gpx</td><td>Sa 04.07.</td><td>Rothaar-Runde</td><td>200 km</td></tr>
+        <tr><td style="color:#64ffda;font-family:monospace;font-size:0.85em;">Route_04_Rueckfahrt_05Juli.gpx</td><td>So 05.07.</td><td>Winterberg → Looft</td><td>490 km</td></tr>
+      </tbody>
+    </table>
+    <div class="tip" style="margin-top:15px;"><strong>GPX Import:</strong> Dateien in Kurviger.de, Calimoto, Garmin Basecamp oder TomTom MyDrive importieren.</div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'karte') setTimeout(initMap, 100);
+}
+
+let mapInitialized = false;
+function initMap() {
+  if (mapInitialized) return;
+  mapInitialized = true;
+
+  const map = L.map('map', { center: [52.2, 9.0], zoom: 6 });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 18
+  }).addTo(map);
+
+  // Icons
+  const startIcon = L.divIcon({ html: '<div style="background:#e94560;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🏠</div>', className: '', iconAnchor: [14,14] });
+  const hotelIcon = L.divIcon({ html: '<div style="background:#ffd700;color:#000;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🏨</div>', className: '', iconAnchor: [14,14] });
+  const stopIcon  = L.divIcon({ html: '<div style="background:#64ffda;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">☕</div>', className: '', iconAnchor: [11,11] });
+  const stopYIcon = L.divIcon({ html: '<div style="background:#ffd700;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">☕</div>', className: '', iconAnchor: [11,11] });
+  const stopOIcon = L.divIcon({ html: '<div style="background:#ff9500;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">☕</div>', className: '', iconAnchor: [11,11] });
+  const midIcon   = L.divIcon({ html: '<div style="background:#64ffda;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🍽️</div>', className: '', iconAnchor: [11,11] });
+  const midYIcon  = L.divIcon({ html: '<div style="background:#ffd700;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🍽️</div>', className: '', iconAnchor: [11,11] });
+  const iceIcon   = L.divIcon({ html: '<div style="background:#ffd700;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🍦</div>', className: '', iconAnchor: [11,11] });
+  const lakeIcon  = L.divIcon({ html: '<div style="background:#4da6ff;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">💧</div>', className: '', iconAnchor: [11,11] });
+
+  // ── ROUTE A: Hinfahrt (exakte Kurviger-Waypoints + Autobahn-Zwischenpunkte) ──
+  const hinfahrt = [
+    [54.028, 9.524],  // START Looft (Kurviger)
+    [53.628, 9.892],  // Hamburg A23→A7
+    [53.470, 9.980],  // Hamburg A7 Süd
+    [52.941, 9.865],  // Soltau A7
+    [52.374, 9.652],  // Hannover A7→A2
+    [51.750, 8.720],  // Paderborn A44 Abfahrt
+    [51.447, 8.592],  // Brilon-Wald (Kurviger-Waypoint)
+    [51.396, 8.570],  // Brilon (Kurviger-Waypoint)
+    [51.208, 8.690],  // Medebach
+    [51.117, 8.631],  // Hallenberg
+    [51.194, 8.522]   // ZIEL Winterberg (Kurviger)
+  ];
+  L.polyline(hinfahrt, { color: '#e94560', weight: 4, opacity: 0.85, dashArray: '8,4' }).addTo(map)
+   .bindPopup('<b style="color:#e94560">02.07 Route A – Hinfahrt</b><br>Looft → A7 → Brilon-Wald → B480 → Winterberg<br>430 km | Abfahrt 08:00 Uhr');
+
+  // ── ROUTE B: Alternative Hinfahrt (exakte Kurviger-Waypoints) ──
+  const hinfahrtAlt = [
+    [54.028, 9.524],  // START Looft (Kurviger) – gleicher Start wie Route A
+    [52.945, 9.881],  // Soltau A7 (Kurviger)
+    [52.249, 9.292],  // Shaping Point (Kurviger)
+    [52.245, 8.912],  // Porta Westfalica (Kurviger)
+    [52.099, 8.903],  // Vlotho / Rinteln B238 (Kurviger)
+    [52.020, 8.920],  // Richtung Horn-Bad Meinberg (Kurviger)
+    [51.929, 8.804],  // Detmold – Kaffeepause (Kurviger)
+    [51.869, 8.814],  // Richtung Paderborn B1 (Kurviger)
+    [51.718, 8.758],  // Paderborn
+    [51.590, 8.630],  // Büren/Alme – Mittagspause
+    [51.396, 8.570],  // Brilon (Kurviger)
+    [51.194, 8.522]   // ZIEL Winterberg (Kurviger)
+  ];
+  L.polyline(hinfahrtAlt, { color: '#ff9500', weight: 4, opacity: 0.85, dashArray: '12,6' }).addTo(map)
+   .bindPopup('<b style="color:#ff9500">02.07 Route B – Alternative</b><br>Via Porta Westfalica · Vlotho · Detmold · Paderborn · B480<br>450 km | ~50% Landstraße | Abfahrt 07:30 Uhr');
+
+  // ── ROUTE 2: Biggesee-Runde 03.07 (exakte Kurviger-Waypoints) ──
+  const biggesee = [
+    [51.194, 8.522],  // START Winterberg
+    [51.153, 8.532],  // Via Point 1 südwärts
+    [51.101, 8.441],  // Siedlinghausen
+    [51.155, 8.287],  // Züschen
+    [51.245, 8.280],  // Schmallenberg – Kaffeepause
+    [51.213, 8.217],  // Richtung Kirchhundem
+    [51.102, 8.068],  // Kirchhundem
+    [51.088, 7.980],  // Richtung Attendorn
+    [51.070, 7.920],  // Biggesee
+    [51.028, 7.850],  // Olpe
+    [51.101, 7.862],  // B55 Richtung Lennestadt
+    [51.137, 8.012],  // Lennestadt-Grevenbrück – Mittagspause
+    [51.166, 8.103],  // Fredeburg
+    [51.255, 8.170],  // Eslohe – Nachmittagspause
+    [51.259, 8.350],  // B55 Richtung Winterberg
+    [51.222, 8.460],  // Züschen Rückweg
+    [51.194, 8.522]   // ZIEL Winterberg
+  ];
+  L.polyline(biggesee, { color: '#64ffda', weight: 4, opacity: 0.85 }).addTo(map)
+   .bindPopup('<b style="color:#64ffda">03.07 Biggesee-Runde</b><br>Winterberg → Siedlinghausen → Schmallenberg → Biggesee → Lennestadt → Eslohe<br>210 km');
+
+  // ── ROUTE 3: Rothaar-Runde 04.07 (exakte Kurviger-Waypoints, nordwärts zuerst) ──
+  const rothaar = [
+    [51.194, 8.522],  // START Winterberg
+    [51.275, 8.518],  // SP1 nordwärts
+    [51.376, 8.614],  // VP2 Brilon/Madfeld-Bereich
+    [51.309, 8.642],  // SP3
+    [51.232, 8.640],  // SP4
+    [51.209, 8.673],  // Medebach
+    [51.158, 8.671],  // SP6
+    [51.107, 8.724],  // VP7 Battenberg/Eder-Bereich
+    [51.059, 8.801],  // Frankenberg – Kaffeepause
+    [51.037, 8.617],  // VP9
+    [51.025, 8.517],  // SP10
+    [50.969, 8.465],  // Richtung Bad Laasphe
+    [50.929, 8.418],  // Bad Laasphe – Mittagspause
+    [50.961, 8.352],  // Richtung Bad Berleburg
+    [51.056, 8.395],  // Bad Berleburg – Nachmittagspause
+    [51.134, 8.424],  // Schwarzenau
+    [51.194, 8.522]   // ZIEL Winterberg
+  ];
+  L.polyline(rothaar, { color: '#ffd700', weight: 4, opacity: 0.85 }).addTo(map)
+   .bindPopup('<b style="color:#ffd700">04.07 Rothaar-Runde</b><br>Winterberg → Nord (Brilon/Madfeld) → Medebach → Frankenberg → Bad Laasphe → Bad Berleburg<br>200 km');
+
+  // ── ROUTE 4: Rückfahrt 05.07 (exakte Kurviger-Waypoints) ──
+  const rueckfahrt = [
+    [51.194, 8.522],  // START Winterberg
+    [51.277, 8.346],  // Richtung Meschede B7
+    [51.354, 8.283],  // Meschede
+    [51.380, 8.150],  // Richtung Arnsberg
+    [51.404, 8.066],  // Arnsberg – Kaffeepause
+    [51.433, 8.033],  // Neheim-Hüsten A46
+    [51.378, 7.550],  // Hagen A1
+    [51.513, 7.468],  // Dortmund A1
+    [51.962, 7.629],  // Münster A1
+    [52.280, 8.047],  // Osnabrück A1
+    [53.075, 8.807],  // Bremen A1
+    [53.461, 9.983],  // Hamburg A1/A7
+    [53.628, 9.892],  // Hamburg A7/A23
+    [53.922, 9.500],  // Itzehoe A23-Abfahrt (Kurviger)
+    [53.871, 9.559]   // ZIEL Looft (Kurviger)
+  ];
+  L.polyline(rueckfahrt, { color: '#4da6ff', weight: 4, opacity: 0.85, dashArray: '8,4' }).addTo(map)
+   .bindPopup('<b style="color:#4da6ff">05.07 Rückfahrt</b><br>Winterberg → B7 → Arnsberg → A46/A1 → Hamburg → A23 → Looft<br>490 km');
+
+  // ── HAUPT-MARKER ──
+  L.marker([54.028, 9.524], { icon: startIcon }).addTo(map)
+   .bindPopup('<b>Looft (25582)</b><br>Startpunkt Route A | 02.07. Abfahrt 08:00 Uhr');
+  // Route B startet am gleichen Punkt wie Route A – kein separater Marker nötig
+  L.marker([51.194, 8.522], { icon: hotelIcon }).addTo(map)
+   .bindPopup('<b>🏨 Lodge Hotel Winterberg</b><br>02.–05. Juli 2026 · 4 Zimmer gebucht<br>Check-in ab 15:00 Uhr');
+
+  // ── PAUSEN ROUTE A (Hinfahrt) – NEU VORGESCHLAGEN ──
+  L.marker([52.941, 9.865], { icon: stopIcon }).addTo(map)
+   .bindPopup('<b>☕ Kaffeepause Route A</b><br>Soltau – Bäckerei/Café im Ort<br>02.07 ca. 09:45 Uhr | ~30 Min');
+  L.marker([51.396, 8.570], { icon: L.divIcon({ html: '<div style="background:#e94560;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🍽️</div>', className: '', iconAnchor: [11,11] }) }).addTo(map)
+   .bindPopup('<b>🍽️ Mittagspause Route A</b><br>Brilon – Marktplatz / Gasthof Brauerei<br>02.07 ca. 12:30 Uhr | ~45 Min');
+
+  // ── PAUSEN ROUTE B (Alternative Hinfahrt) ──
+  L.marker([52.245, 8.912], { icon: L.divIcon({ html: '<div style="background:#ff9500;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🏛️</div>', className: '', iconAnchor: [11,11] }) }).addTo(map)
+   .bindPopup('<b>🏛️ Zwischenstopp Route B</b><br>Porta Westfalica – Kaiser-Wilhelm-Denkmal<br>02.07 ca. 10:30 Uhr | ~20–30 Min');
+  L.marker([51.929, 8.804], { icon: stopOIcon }).addTo(map)
+   .bindPopup('<b>☕ Kaffeepause Route B</b><br>Detmold – Café am Markt · Hermannsdenkmal 2 km<br>02.07 ca. 11:30 Uhr | 40 Min');
+  L.marker([51.590, 8.630], { icon: L.divIcon({ html: '<div style="background:#ff9500;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🍽️</div>', className: '', iconAnchor: [11,11] }) }).addTo(map)
+   .bindPopup('<b>🍽️ Mittagspause Route B</b><br>Büren – Landgasthof am Alten Markt<br>02.07 ca. 13:15 Uhr | ~45 Min');
+
+  // ── PAUSEN TAGESTOUR 03.07 ──
+  L.marker([51.245, 8.280], { icon: stopIcon }).addTo(map)
+   .bindPopup('<b>☕ Kaffeepause</b><br>Schmallenberg<br>03.07 ca. 10:15 Uhr | 35 Min');
+  L.marker([51.070, 7.920], { icon: lakeIcon }).addTo(map)
+   .bindPopup('<b>💧 Biggesee</b><br>Panoramafahrt am Stausee<br>03.07 ca. 11:45 Uhr');
+  L.marker([51.137, 8.012], { icon: midIcon }).addTo(map)
+   .bindPopup('<b>🍽️ Mittagspause</b><br>Lennestadt-Grevenbrück<br>03.07 ca. 13:15 Uhr | 60 Min');
+  L.marker([51.255, 8.170], { icon: iceIcon }).addTo(map)
+   .bindPopup('<b>🍦 Nachmittagspause</b><br>Eslohe – Eisdiele<br>03.07 ca. 15:30 Uhr | 30 Min');
+
+  // ── PAUSEN TAGESTOUR 04.07 ──
+  L.marker([51.059, 8.801], { icon: stopYIcon }).addTo(map)
+   .bindPopup('<b>☕ Kaffeepause</b><br>Frankenberg (Eder) – Marktplatz<br>04.07 ca. 10:30 Uhr | 40 Min');
+  L.marker([50.929, 8.418], { icon: midYIcon }).addTo(map)
+   .bindPopup('<b>🍽️ Mittagspause</b><br>Bad Laasphe – Restaurants am Kurpark<br>04.07 ca. 13:00 Uhr | 60 Min');
+  L.marker([51.056, 8.395], { icon: iceIcon }).addTo(map)
+   .bindPopup('<b>🍦 Nachmittagspause</b><br>Bad Berleburg – Schloss & Eisdiele<br>04.07 ca. 15:30 Uhr | 35 Min');
+
+  // ── PAUSEN RÜCKFAHRT 05.07 ──
+  L.marker([51.404, 8.066], { icon: L.divIcon({ html: '<div style="background:#4da6ff;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">☕</div>', className: '', iconAnchor: [11,11] }) }).addTo(map)
+   .bindPopup('<b>☕ Kaffeepause</b><br>Arnsberg Oberstadt<br>05.07 ca. 10:30 Uhr | 35 Min');
+  L.marker([52.280, 8.047], { icon: L.divIcon({ html: '<div style="background:#4da6ff;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🍽️</div>', className: '', iconAnchor: [11,11] }) }).addTo(map)
+   .bindPopup('<b>🍽️ Mittagspause</b><br>Osnabrück / Raststätte A1<br>05.07 ca. 13:00 Uhr | 30 Min');
+}
+</script>
+
+</body>
+</html>
